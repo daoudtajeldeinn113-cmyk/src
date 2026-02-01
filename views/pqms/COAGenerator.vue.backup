@@ -1,0 +1,1035 @@
+﻿<template>
+  <div class="coa-generator">
+    <!-- Header -->
+    <div class="header">
+      <h1>🎫 مولد شهادات التحليل (COA)</h1>
+      <p class="subtitle">Certificate of Analysis Generator - وفقًا للمعايير الدوائية العالمية</p>
+    </div>
+
+    <!-- Main Content -->
+    <div class="coa-container">
+      <!-- Left Side: Form -->
+      <div class="form-section">
+        <h2>📝 بيانات شهادة التحليل</h2>
+        
+        <!-- Batch Information -->
+        <div class="section-card">
+          <h3>1. معلومات التشغيلة</h3>
+          <div class="form-grid">
+            <div class="form-group">
+              <label for="batchNumber">🔢 رقم التشغيلة:</label>
+              <input type="text" id="batchNumber" v-model="coaData.batchNumber" 
+                     placeholder="مثال: BATCH-2024-001" required>
+              <small class="form-text">رقم فريد يحدد دفعة الإنتاج</small>
+            </div>
+            
+            <div class="form-group">
+              <label for="analysisNumber">🔬 رقم التحليل:</label>
+              <input type="text" id="analysisNumber" v-model="coaData.analysisNumber" 
+                     placeholder="مثال: AN-2024-001" required>
+              <small class="form-text">رقم فريد لتقرير التحليل</small>
+            </div>
+          </div>
+          
+          <div class="form-grid">
+            <div class="form-group">
+              <label for="productName">📦 اسم المنتج:</label>
+              <input type="text" id="productName" v-model="coaData.productName" 
+                     placeholder="أدخل اسم المنتج الدوائي" required>
+            </div>
+            
+            <div class="form-group">
+              <label for="productCode">🏷️ كود المنتج:</label>
+              <input type="text" id="productCode" v-model="coaData.productCode" 
+                     placeholder="مثال: PROD-001" required>
+            </div>
+          </div>
+        </div>
+
+        <!-- Manufacturing Details -->
+        <div class="section-card">
+          <h3>2. تفاصيل التصنيع</h3>
+          <div class="form-grid">
+            <div class="form-group">
+              <label for="manufacturingDate">📅 تاريخ التصنيع:</label>
+              <input type="date" id="manufacturingDate" v-model="coaData.manufacturingDate" required>
+            </div>
+            
+            <div class="form-group">
+              <label for="expiryDate">⏰ تاريخ الانتهاء:</label>
+              <input type="date" id="expiryDate" v-model="coaData.expiryDate" required>
+            </div>
+          </div>
+          
+          <div class="form-grid">
+            <div class="form-group">
+              <label for="manufacturer">🏭 المصنع:</label>
+              <input type="text" id="manufacturer" v-model="coaData.manufacturer" 
+                     placeholder="اسم شركة التصنيع" required>
+            </div>
+            
+            <div class="form-group">
+              <label for="manufacturingSite">📍 موقع التصنيع:</label>
+              <input type="text" id="manufacturingSite" v-model="coaData.manufacturingSite" 
+                     placeholder="موقع المنشأة" required>
+            </div>
+          </div>
+        </div>
+
+        <!-- Test Parameters -->
+        <div class="section-card">
+          <h3>3. معايير ونتائج الاختبار</h3>
+          
+          <!-- Test Items Table -->
+          <div class="test-parameters">
+            <table class="parameters-table">
+              <thead>
+                <tr>
+                  <th>المعيار</th>
+                  <th>المواصفة</th>
+                  <th>النتيجة</th>
+                  <th>الحكم</th>
+                  <th>الإجراء</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr v-for="(test, index) in coaData.testParameters" :key="index">
+                  <td>
+                    <input type="text" v-model="test.parameter" 
+                           placeholder="مثال: النقاوة" required>
+                  </td>
+                  <td>
+                    <input type="text" v-model="test.specification" 
+                           placeholder="مثال: 98.0% - 102.0%" required>
+                  </td>
+                  <td>
+                    <input type="text" v-model="test.result" 
+                           placeholder="مثال: 99.5%" required>
+                  </td>
+                  <td>
+                    <select v-model="test.judgment" required>
+                      <option value="pass">✅ مطابق</option>
+                      <option value="fail">❌ غير مطابق</option>
+                      <option value="na">⚪ غير مطبق</option>
+                    </select>
+                  </td>
+                  <td>
+                    <button @click="removeTestParameter(index)" class="btn btn-sm btn-danger">
+                      🗑️ حذف
+                    </button>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+            
+            <button @click="addTestParameter" class="btn btn-secondary">
+              ➕ إضافة معيار اختبار
+            </button>
+          </div>
+        </div>
+
+        <!-- Approval Section -->
+        <div class="section-card">
+          <h3>4. الاعتماد والموافقة</h3>
+          <div class="form-grid">
+            <div class="form-group">
+              <label for="analystName">👨‍🔬 اسم المحلل:</label>
+              <input type="text" id="analystName" v-model="coaData.analystName" required>
+            </div>
+            
+            <div class="form-group">
+              <label for="analystSignature">✍️ توقيع المحلل:</label>
+              <input type="text" id="analystSignature" v-model="coaData.analystSignature" 
+                     placeholder="التوقيع الإلكتروني" required>
+            </div>
+          </div>
+          
+          <div class="form-grid">
+            <div class="form-group">
+              <label for="reviewerName">👨‍💼 اسم المراجع:</label>
+              <input type="text" id="reviewerName" v-model="coaData.reviewerName" required>
+            </div>
+            
+            <div class="form-group">
+              <label for="approverName">👨‍⚖️ اسم المعتمد:</label>
+              <input type="text" id="approverName" v-model="coaData.approverName" required>
+            </div>
+          </div>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="action-buttons">
+          <button @click="generateCOA" class="btn btn-primary btn-lg">
+            🎫 إنشاء شهادة التحليل
+          </button>
+          <button @click="saveDraft" class="btn btn-secondary btn-lg">
+            💾 حفظ كمسودة
+          </button>
+          <button @click="resetForm" class="btn btn-outline btn-lg">
+            🔄 إعادة تعيين
+          </button>
+        </div>
+      </div>
+
+      <!-- Right Side: Preview -->
+      <div class="preview-section">
+        <h2>👁️ معاينة الشهادة</h2>
+        
+        <div class="coa-preview" ref="coaPreview">
+          <!-- COA Template -->
+          <div class="coa-template">
+            <!-- Header -->
+            <div class="coa-header">
+              <div class="company-logo">
+                <div class="logo-placeholder">🏢</div>
+                <h2>شركة الأدوية العالمية</h2>
+              </div>
+              <div class="coa-title">
+                <h1>شهادة التحليل</h1>
+                <h3>Certificate of Analysis</h3>
+              </div>
+              <div class="coa-meta">
+                <div class="meta-item">
+                  <strong>رقم الوثيقة:</strong> COA-{{ coaData.analysisNumber }}
+                </div>
+                <div class="meta-item">
+                  <strong>الإصدار:</strong> 1.0
+                </div>
+              </div>
+            </div>
+
+            <!-- Product Information -->
+            <div class="coa-section">
+              <h4>معلومات المنتج</h4>
+              <table class="coa-table">
+                <tr>
+                  <td><strong>اسم المنتج:</strong></td>
+                  <td>{{ coaData.productName || '[اسم المنتج]' }}</td>
+                  <td><strong>كود المنتج:</strong></td>
+                  <td>{{ coaData.productCode || '[كود المنتج]' }}</td>
+                </tr>
+                <tr>
+                  <td><strong>رقم التشغيلة:</strong></td>
+                  <td>{{ coaData.batchNumber || '[رقم التشغيلة]' }}</td>
+                  <td><strong>رقم التحليل:</strong></td>
+                  <td>{{ coaData.analysisNumber || '[رقم التحليل]' }}</td>
+                </tr>
+                <tr>
+                  <td><strong>تاريخ التصنيع:</strong></td>
+                  <td>{{ formatDate(coaData.manufacturingDate) || '[تاريخ التصنيع]' }}</td>
+                  <td><strong>تاريخ الانتهاء:</strong></td>
+                  <td>{{ formatDate(coaData.expiryDate) || '[تاريخ الانتهاء]' }}</td>
+                </tr>
+              </table>
+            </div>
+
+            <!-- Test Results -->
+            <div class="coa-section">
+              <h4>نتائج الاختبارات</h4>
+              <table class="results-table">
+                <thead>
+                  <tr>
+                    <th>#</th>
+                    <th>المعيار</th>
+                    <th>المواصفة</th>
+                    <th>النتيجة</th>
+                    <th>الحكم</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr v-for="(test, index) in coaData.testParameters" :key="index">
+                    <td>{{ index + 1 }}</td>
+                    <td>{{ test.parameter || '[المعيار]' }}</td>
+                    <td>{{ test.specification || '[المواصفة]' }}</td>
+                    <td>{{ test.result || '[النتيجة]' }}</td>
+                    <td>
+                      <span :class="getJudgmentClass(test.judgment)">
+                        {{ getJudgmentText(test.judgment) }}
+                      </span>
+                    </td>
+                  </tr>
+                  <tr v-if="coaData.testParameters.length === 0">
+                    <td colspan="5" class="text-center">لا توجد معايير مضافة</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+
+            <!-- Conclusion -->
+            <div class="coa-section">
+              <h4>الخلاصة والموافقة</h4>
+              <div class="conclusion">
+                <p>
+                  <strong>الخلاصة:</strong>
+                  بناءً على نتائج الاختبارات المذكورة أعلاه، فإن التشغيلة 
+                  <strong>{{ coaData.batchNumber || '[رقم التشغيلة]' }}</strong>
+                  {{ getConclusionText() }}
+                </p>
+                
+                <div class="signatures">
+                  <div class="signature">
+                    <strong>المحلل:</strong><br>
+                    {{ coaData.analystName || '[اسم المحلل]' }}<br>
+                    التوقيع: ________________
+                  </div>
+                  <div class="signature">
+                    <strong>المراجع:</strong><br>
+                    {{ coaData.reviewerName || '[اسم المراجع]' }}<br>
+                    التوقيع: ________________
+                  </div>
+                  <div class="signature">
+                    <strong>المعتمد:</strong><br>
+                    {{ coaData.approverName || '[اسم المعتمد]' }}<br>
+                    التوقيع: ________________
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Footer -->
+            <div class="coa-footer">
+              <p>© 2024 نظام إدارة الجودة الدوائية PQMS V008 | هذه الوثيقة صادرة إلكترونياً</p>
+              <p>تاريخ الإصدار: {{ currentDate }}</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Preview Actions -->
+        <div class="preview-actions">
+          <button @click="printCOA" class="btn btn-success">
+            🖨️ طباعة الشهادة
+          </button>
+          <button @click="exportPDF" class="btn btn-info">
+            📄 تصدير PDF
+          </button>
+          <button @click="saveCOA" class="btn btn-primary">
+            💾 حفظ الشهادة
+          </button>
+        </div>
+
+        <!-- Recent COAs -->
+        <div class="recent-coas" v-if="recentCOAs.length > 0">
+          <h3>📋 الشهادات الحديثة</h3>
+          <table class="recent-table">
+            <thead>
+              <tr>
+                <th>رقم التحليل</th>
+                <th>رقم التشغيلة</th>
+                <th>المنتج</th>
+                <th>التاريخ</th>
+                <th>الحالة</th>
+                <th>الإجراءات</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr v-for="coa in recentCOAs" :key="coa.id">
+                <td>{{ coa.analysisNumber }}</td>
+                <td>{{ coa.batchNumber }}</td>
+                <td>{{ coa.productName }}</td>
+                <td>{{ formatDate(coa.createdDate) }}</td>
+                <td>
+                  <span class="status-badge approved">معتمد</span>
+                </td>
+                <td>
+                  <button @click="loadCOA(coa)" class="btn btn-sm btn-primary">فتح</button>
+                  <button @click="deleteCOA(coa.id)" class="btn btn-sm btn-danger">حذف</button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</template>
+
+<script setup lang="ts">
+import { ref, onMounted, computed } from 'vue'
+import html2pdf from 'html2pdf.js'
+
+// Reactive Data
+const coaData = ref({
+  batchNumber: '',
+  analysisNumber: '',
+  productName: '',
+  productCode: '',
+  manufacturingDate: '',
+  expiryDate: '',
+  manufacturer: 'شركة الأدوية العالمية',
+  manufacturingSite: 'مصنع الرياض - المملكة العربية السعودية',
+  
+  testParameters: [
+    { parameter: 'النقاوة', specification: '98.0% - 102.0%', result: '99.5%', judgment: 'pass' },
+    { parameter: 'التحلل', specification: 'لا يزيد عن 1.0%', result: '0.5%', judgment: 'pass' },
+    { parameter: 'المحتوى المائي', specification: 'لا يزيد عن 5.0%', result: '2.3%', judgment: 'pass' },
+    { parameter: 'الرقم الهيدروجيني', specification: '6.0 - 7.5', result: '6.8', judgment: 'pass' },
+  ],
+  
+  analystName: 'أحمد محمد',
+  analystSignature: 'A. Mohamed',
+  reviewerName: 'سارة علي',
+  approverName: 'خالد عبدالله',
+  
+  status: 'draft',
+  createdDate: new Date().toISOString()
+})
+
+const recentCOAs = ref<any[]>([])
+const coaPreview = ref<HTMLElement>()
+
+// Computed Properties
+const currentDate = computed(() => {
+  return new Date().toLocaleDateString('ar-SA', {
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric'
+  })
+})
+
+// Methods
+const formatDate = (dateString: string) => {
+  if (!dateString) return ''
+  return new Date(dateString).toLocaleDateString('ar-SA')
+}
+
+const addTestParameter = () => {
+  coaData.value.testParameters.push({
+    parameter: '',
+    specification: '',
+    result: '',
+    judgment: 'pass'
+  })
+}
+
+const removeTestParameter = (index: number) => {
+  coaData.value.testParameters.splice(index, 1)
+}
+
+const getJudgmentClass = (judgment: string) => {
+  switch(judgment) {
+    case 'pass': return 'judgment-pass'
+    case 'fail': return 'judgment-fail'
+    default: return 'judgment-na'
+  }
+}
+
+const getJudgmentText = (judgment: string) => {
+  switch(judgment) {
+    case 'pass': return '✅ مطابق'
+    case 'fail': return '❌ غير مطابق'
+    default: return '⚪ غير مطبق'
+  }
+}
+
+const getConclusionText = () => {
+  const allPass = coaData.value.testParameters.every(t => t.judgment === 'pass')
+  return allPass ? 'مطابقة لجميع المواصفات المحددة.' : 'غير مطابقة للمواصفات.'
+}
+
+// Actions
+const generateCOA = () => {
+  if (!validateCOA()) {
+    alert('الرجاء إكمال جميع الحقول الإلزامية')
+    return
+  }
+  
+  coaData.value.status = 'approved'
+  coaData.value.createdDate = new Date().toISOString()
+  
+  // Generate analysis number if empty
+  if (!coaData.value.analysisNumber) {
+    const date = new Date()
+    const year = date.getFullYear()
+    const month = (date.getMonth() + 1).toString().padStart(2, '0')
+    const day = date.getDate().toString().padStart(2, '0')
+    const random = Math.floor(Math.random() * 1000).toString().padStart(3, '0')
+    coaData.value.analysisNumber = `AN-${year}${month}${day}-${random}`
+  }
+  
+  alert('✅ تم إنشاء شهادة التحليل بنجاح!')
+}
+
+const validateCOA = () => {
+  const data = coaData.value
+  return (
+    data.batchNumber &&
+    data.productName &&
+    data.productCode &&
+    data.manufacturingDate &&
+    data.expiryDate &&
+    data.testParameters.length > 0 &&
+    data.analystName &&
+    data.reviewerName &&
+    data.approverName
+  )
+}
+
+const saveDraft = () => {
+  coaData.value.status = 'draft'
+  saveCOA()
+  alert('💾 تم حفظ المسودة بنجاح')
+}
+
+const saveCOA = () => {
+  const coa = {
+    id: Date.now(),
+    ...coaData.value,
+    createdDate: new Date().toISOString()
+  }
+  
+  // Save to localStorage
+  const savedCOAs = JSON.parse(localStorage.getItem('pqms_coas') || '[]')
+  savedCOAs.unshift(coa)
+  localStorage.setItem('pqms_coas', JSON.stringify(savedCOAs))
+  
+  // Update recent list
+  loadRecentCOAs()
+}
+
+const loadRecentCOAs = () => {
+  const savedCOAs = JSON.parse(localStorage.getItem('pqms_coas') || '[]')
+  recentCOAs.value = savedCOAs.slice(0, 5) // Show only recent 5
+}
+
+const loadCOA = (coa: any) => {
+  coaData.value = { ...coa }
+}
+
+const deleteCOA = (id: number) => {
+  if (confirm('هل أنت متأكد من حذف هذه الشهادة؟')) {
+    const savedCOAs = JSON.parse(localStorage.getItem('pqms_coas') || '[]')
+    const filtered = savedCOAs.filter((coa: any) => coa.id !== id)
+    localStorage.setItem('pqms_coas', JSON.stringify(filtered))
+    loadRecentCOAs()
+    alert('🗑️ تم حذف الشهادة بنجاح')
+  }
+}
+
+const resetForm = () => {
+  if (confirm('هل تريد إعادة تعيين النموذج؟ سيتم فقدان البيانات غير المحفوظة.')) {
+    coaData.value = {
+      batchNumber: '',
+      analysisNumber: '',
+      productName: '',
+      productCode: '',
+      manufacturingDate: '',
+      expiryDate: '',
+      manufacturer: 'شركة الأدوية العالمية',
+      manufacturingSite: 'مصنع الرياض - المملكة العربية السعودية',
+      testParameters: [
+        { parameter: '', specification: '', result: '', judgment: 'pass' }
+      ],
+      analystName: '',
+      analystSignature: '',
+      reviewerName: '',
+      approverName: '',
+      status: 'draft',
+      createdDate: new Date().toISOString()
+    }
+  }
+}
+
+const printCOA = () => {
+  if (!coaPreview.value) return
+  
+  const printWindow = window.open('', '_blank')
+  if (!printWindow) return
+  
+  const content = coaPreview.value.innerHTML
+  printWindow.document.write(`
+    <!DOCTYPE html>
+    <html dir="rtl" lang="ar">
+    <head>
+      <meta charset="UTF-8">
+      <title>شهادة التحليل - ${coaData.value.analysisNumber}</title>
+      <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .coa-template { border: 2px solid #333; padding: 20px; }
+        .coa-header { text-align: center; margin-bottom: 30px; }
+        .coa-section { margin: 20px 0; }
+        table { width: 100%; border-collapse: collapse; margin: 10px 0; }
+        th, td { border: 1px solid #ddd; padding: 8px; text-align: center; }
+        th { background-color: #f2f2f2; }
+        .judgment-pass { color: green; }
+        .judgment-fail { color: red; }
+        .signatures { display: flex; justify-content: space-around; margin-top: 30px; }
+        .signature { text-align: center; }
+        @media print {
+          body { margin: 0; }
+          .no-print { display: none; }
+        }
+      </style>
+    </head>
+    <body>
+      ${content}
+      <script>
+        window.onload = function() {
+          window.print();
+          setTimeout(() => window.close(), 1000);
+        }
+      <\/script>
+    </body>
+    </html>
+  `)
+  printWindow.document.close()
+}
+
+const exportPDF = async () => {
+  if (!coaPreview.value) return
+  
+  const element = coaPreview.value
+  const opt = {
+    margin: [10, 10],
+    filename: `COA_${coaData.value.analysisNumber || 'draft'}.pdf`,
+    image: { type: 'jpeg', quality: 0.98 },
+    html2canvas: { scale: 2 },
+    jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+  }
+  
+  try {
+    await html2pdf().set(opt).from(element).save()
+    alert('📄 تم تصدير PDF بنجاح!')
+  } catch (error) {
+    console.error('PDF export error:', error)
+    alert('حدث خطأ أثناء تصدير PDF')
+  }
+}
+
+// Lifecycle
+onMounted(() => {
+  loadRecentCOAs()
+  
+  // Generate default analysis number
+  const date = new Date()
+  const year = date.getFullYear()
+  const month = (date.getMonth() + 1).toString().padStart(2, '0')
+  const day = date.getDate().toString().padStart(2, '0')
+  const random = Math.floor(Math.random() * 1000).toString().padStart(3, '0')
+  coaData.value.analysisNumber = `AN-${year}${month}${day}-${random}`
+  
+  // Set default dates
+  const today = new Date().toISOString().split('T')[0]
+  coaData.value.manufacturingDate = today
+  
+  const expiryDate = new Date()
+  expiryDate.setFullYear(expiryDate.getFullYear() + 2)
+  coaData.value.expiryDate = expiryDate.toISOString().split('T')[0]
+})
+</script>
+
+<style scoped>
+.coa-generator {
+  padding: 20px;
+  max-width: 1400px;
+  margin: 0 auto;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
+.header {
+  text-align: center;
+  margin-bottom: 30px;
+  padding: 20px;
+  background: linear-gradient(135deg, #4CAF50 0%, #2E7D32 100%);
+  color: white;
+  border-radius: 10px;
+}
+
+.header h1 {
+  font-size: 2.5rem;
+  margin-bottom: 10px;
+}
+
+.subtitle {
+  font-size: 1.2rem;
+  opacity: 0.9;
+}
+
+.coa-container {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 30px;
+  margin-top: 20px;
+}
+
+@media (max-width: 1200px) {
+  .coa-container {
+    grid-template-columns: 1fr;
+  }
+}
+
+.form-section, .preview-section {
+  background: white;
+  padding: 25px;
+  border-radius: 10px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.form-section h2, .preview-section h2 {
+  color: #2c3e50;
+  margin-bottom: 20px;
+  padding-bottom: 10px;
+  border-bottom: 2px solid #4CAF50;
+}
+
+.section-card {
+  background: #f8f9fa;
+  padding: 20px;
+  border-radius: 8px;
+  margin-bottom: 25px;
+  border-right: 4px solid #4CAF50;
+}
+
+.section-card h3 {
+  color: #2E7D32;
+  margin-bottom: 15px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.form-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 15px;
+  margin-bottom: 15px;
+}
+
+.form-group {
+  margin-bottom: 15px;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 5px;
+  font-weight: bold;
+  color: #495057;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.form-group input,
+.form-group select {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid #ced4da;
+  border-radius: 5px;
+  font-size: 1rem;
+  transition: border-color 0.3s;
+}
+
+.form-group input:focus,
+.form-group select:focus {
+  outline: none;
+  border-color: #4CAF50;
+  box-shadow: 0 0 0 2px rgba(76, 175, 80, 0.2);
+}
+
+.form-text {
+  display: block;
+  margin-top: 5px;
+  font-size: 0.85rem;
+  color: #6c757d;
+}
+
+.parameters-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 15px 0;
+}
+
+.parameters-table th,
+.parameters-table td {
+  padding: 10px;
+  border: 1px solid #dee2e6;
+  text-align: center;
+}
+
+.parameters-table th {
+  background: #e9f5e9;
+  color: #2E7D32;
+  font-weight: bold;
+}
+
+.parameters-table input {
+  width: 100%;
+  padding: 5px;
+  border: 1px solid #ddd;
+  border-radius: 3px;
+}
+
+.action-buttons {
+  display: flex;
+  gap: 15px;
+  margin-top: 30px;
+  justify-content: center;
+}
+
+.btn {
+  padding: 12px 24px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 1rem;
+  font-weight: bold;
+  transition: all 0.3s;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+.btn-primary {
+  background: linear-gradient(135deg, #4CAF50 0%, #2E7D32 100%);
+  color: white;
+}
+
+.btn-secondary {
+  background: #6c757d;
+  color: white;
+}
+
+.btn-success {
+  background: #28a745;
+  color: white;
+}
+
+.btn-info {
+  background: #17a2b8;
+  color: white;
+}
+
+.btn-outline {
+  background: transparent;
+  border: 2px solid #6c757d;
+  color: #6c757d;
+}
+
+.btn-danger {
+  background: #dc3545;
+  color: white;
+}
+
+.btn-sm {
+  padding: 5px 10px;
+  font-size: 0.9rem;
+}
+
+.btn-lg {
+  padding: 15px 30px;
+  font-size: 1.1rem;
+}
+
+/* Preview Styles */
+.coa-preview {
+  background: white;
+  padding: 20px;
+  border: 2px solid #dee2e6;
+  border-radius: 5px;
+  margin-bottom: 20px;
+  max-height: 800px;
+  overflow-y: auto;
+}
+
+.coa-template {
+  padding: 30px;
+  background: white;
+  box-shadow: 0 0 10px rgba(0,0,0,0.1);
+}
+
+.coa-header {
+  text-align: center;
+  margin-bottom: 30px;
+  padding-bottom: 20px;
+  border-bottom: 3px double #333;
+}
+
+.company-logo {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 20px;
+  margin-bottom: 20px;
+}
+
+.logo-placeholder {
+  font-size: 3rem;
+}
+
+.company-logo h2 {
+  color: #2E7D32;
+  margin: 0;
+}
+
+.coa-title h1 {
+  color: #333;
+  margin: 10px 0 5px 0;
+  font-size: 2.5rem;
+}
+
+.coa-title h3 {
+  color: #666;
+  margin: 0;
+  font-weight: normal;
+}
+
+.coa-meta {
+  display: flex;
+  justify-content: center;
+  gap: 30px;
+  margin-top: 15px;
+  font-size: 0.9rem;
+  color: #666;
+}
+
+.coa-section {
+  margin: 25px 0;
+}
+
+.coa-section h4 {
+  color: #2E7D32;
+  margin-bottom: 15px;
+  padding-bottom: 5px;
+  border-bottom: 1px solid #ddd;
+}
+
+.coa-table, .results-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 15px 0;
+}
+
+.coa-table td, .results-table th, .results-table td {
+  padding: 10px;
+  border: 1px solid #ddd;
+  text-align: center;
+}
+
+.coa-table td:first-child, .coa-table td:nth-child(3) {
+  background: #f8f9fa;
+  font-weight: bold;
+  width: 25%;
+}
+
+.results-table th {
+  background: #e9f5e9;
+  color: #2E7D32;
+  font-weight: bold;
+}
+
+.results-table tr:nth-child(even) {
+  background: #f8f9fa;
+}
+
+.judgment-pass {
+  color: #28a745;
+  font-weight: bold;
+}
+
+.judgment-fail {
+  color: #dc3545;
+  font-weight: bold;
+}
+
+.judgment-na {
+  color: #6c757d;
+}
+
+.conclusion {
+  padding: 15px;
+  background: #f8f9fa;
+  border-radius: 5px;
+  margin: 20px 0;
+}
+
+.signatures {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 20px;
+  margin-top: 30px;
+  padding-top: 20px;
+  border-top: 2px solid #ddd;
+}
+
+.signature {
+  text-align: center;
+}
+
+.coa-footer {
+  margin-top: 40px;
+  padding-top: 20px;
+  border-top: 2px solid #ddd;
+  text-align: center;
+  color: #666;
+  font-size: 0.9rem;
+}
+
+.preview-actions {
+  display: flex;
+  gap: 15px;
+  margin: 20px 0;
+  justify-content: center;
+}
+
+.recent-coas {
+  margin-top: 30px;
+}
+
+.recent-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 15px;
+}
+
+.recent-table th, .recent-table td {
+  padding: 10px;
+  border: 1px solid #dee2e6;
+  text-align: center;
+}
+
+.recent-table th {
+  background: #e9f5e9;
+  color: #2E7D32;
+}
+
+.status-badge {
+  padding: 5px 10px;
+  border-radius: 15px;
+  font-size: 0.8rem;
+  font-weight: bold;
+}
+
+.status-badge.approved {
+  background: #28a745;
+  color: white;
+}
+
+.text-center {
+  text-align: center;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .form-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .signatures {
+    grid-template-columns: 1fr;
+    gap: 15px;
+  }
+  
+  .action-buttons, .preview-actions {
+    flex-direction: column;
+  }
+  
+  .btn {
+    width: 100%;
+    justify-content: center;
+  }
+}
+</style>
